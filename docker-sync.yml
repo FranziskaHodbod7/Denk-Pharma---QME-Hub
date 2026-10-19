@@ -1,0 +1,32 @@
+version: "2"
+
+options:
+  verbose: true
+  compose-file-path: 'docker-compose.yml'
+  compose-dev-file-path: 'docker-compose.override.yml'
+syncs:
+  denk-pharma-qme-hub-dockersync: # tip: add -sync and you keep consistent names as a convention
+    src: '.'
+    sync_userid: 1000 # user application
+    sync_strategy: 'native_osx' # not needed, this is the default now
+    native_osx_image: registry.gitlab.com/format-d/devops/format-d-base-images/dockersync-unison:latest
+    sync_args:
+      # default file location is not same as expected by docker-sync (https://github.com/EugenMayer/docker-sync/issues/769)
+      - "-logfile=/tmp/unison.log"
+    host_disk_mount_mode: 'cached'
+    sync_excludes:
+      - .idea
+      - .git
+      - node_modules
+      # Excludes für Neos
+      - source/Data/Temporary
+      - source/Data/Logs
+      - source/Web/_Resources
+      - source/Data/Persistent/Cache/Data/Flow_Session_MetaData
+      - source/Data/Persistent/Cache/Data/Flow_Session_Storage
+      # Excludes für Shopware
+      - source/var/cache/dev*
+      - source/var/cache/prod*
+      # Excludes für TYPO3
+      - source/var/cache
+      - source/typo3temp

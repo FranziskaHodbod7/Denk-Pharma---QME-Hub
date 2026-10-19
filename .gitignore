@@ -1,0 +1,69 @@
+# Project files
+/.idea/*
+/dev/.vagrant/
+/dev/php_errors.log
+/dev/dev-control/
+/dev/db_backup_*
+/dev/local.itermocil.yaml
+
+
+# Structurizr
+Documentation/build
+
+# General swap/backup files
+*.so
+*.log
+*.out
+*~
+*.swp
+*.DS_Store
+*.sass-cache*
+
+node_modules
+.docker-sync
+
+# TYPO3 Flow/Neos
+*.yaml.example*
+/source/Build/*
+/source/Web/_Resources/
+/source/Web/index.php
+/source/bin/
+/source/Data/Logs/
+/source/Data/Temporary/
+/source/Data/Persistent/Cache/Data/Flow_Session_Storage
+/source/Data/Persistent/Cache/Data/Flow_Session_MetaData
+/source/Data/Persistent/Cache/Data/Flow_Security_Cryptography_HashService
+/source/Packages/*
+/source/Readme.txt
+/source/Upgrading.txt
+/source/flow
+/source/flow.bat
+/source/README
+/source/Configuration/README
+
+# Shared Media
+/source/Data/Persistent/Resources/*
+
+# Distribution Project Package
+/source/DistributionPackages/Sites/DenkPharma.Hub/Resources/Public/JavaScript/*
+/source/DistributionPackages/Sites/DenkPharma.Hub/Resources/Public/StyleSheets/*
+
+# Import data
+/import-data/*
+
+# Local configurations
+/source/Configuration/**/*.local.yml
+/source/Configuration/**/*.local.yaml
+
+# Browser testing
+/.playwright-cli
+
+# AI Agents
+/CLAUDE.local.md
+/.worktrees
+/.playwright-mcp
+/docs/superpowers
+/docs/investigations
+
+# This should stay at the bottom
+!*.gitkeep

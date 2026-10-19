@@ -1,0 +1,63 @@
+# =============================================================================
+# docker-compose.native.yml — Native bind-mount alternative to docker-sync.
+# =============================================================================
+#
+# USAGE
+# -----------------------------------------------------------------------------
+# Start (foreground, shows logs):
+#   docker compose -f docker-compose.yml -f docker-compose.native.yml up
+#
+# Start (detached/background):
+#   docker compose -f docker-compose.yml -f docker-compose.native.yml up -d
+#
+# Stop (if running detached, or from another terminal):
+#   docker compose -f docker-compose.yml -f docker-compose.native.yml down
+#
+# Rebuild images (e.g. after Dockerfile changes):
+#   docker compose -f docker-compose.yml -f docker-compose.native.yml up --build
+#
+# Full cleanup (removes containers, volumes, docker-sync stack):
+#   ./fd clean
+#
+# NOTES
+# -----------------------------------------------------------------------------
+# - This file is NOT loaded by ./fd — other devs using ./fd start are unaffected.
+# - docker-compose.override.yml is NOT loaded when -f flags are used explicitly,
+#   so this file must include everything from there (ports, env_file, secrets).
+# - For best performance on macOS make sure Docker Desktop uses VirtioFS:
+#   Settings → General → Virtual file sharing implementation → VirtioFS
+# =============================================================================
+
+services:
+  app:
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./source:/app/source
+      - ./dev:/app/dev
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      - ./postcss.config.cjs:/app/postcss.config.cjs
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./jsconfig.json:/app/jsconfig.json
+      - ./vite.config.js:/app/vite.config.js
+    env_file:
+      - dev/dev-control/devlab/smtp-credentials.env
+      - dev/dockerprovisioning/default.env
+      - dev/dockerprovisioning/development.env
+    secrets:
+      - host_ssh_key
+
+  mysql:
+    ports:
+      - 3306:3306
+    volumes:
+      - ./dev/project_development.sql.gz:/docker-entrypoint-initdb.d/project_development.sql.gz
+    env_file:
+      - dev/dockerprovisioning/default.env
+      - dev/dockerprovisioning/development.env
+
+secrets:
+  host_ssh_key:
+    file: ~/.ssh/id_rsa

@@ -1,0 +1,81 @@
+services:
+  #######################################
+  # PHP application Docker container
+  #######################################
+  app:
+    build:
+      context: dev/dockerprovisioning/app/
+      dockerfile: Apache-PHP-85-Node24.Dockerfile.dev
+    links:
+      - mysql
+#      - postgres
+#      - opensearch
+    networks:
+      - app-network
+
+
+  #######################################
+  # MySQL server
+  #######################################
+  mysql:
+    build:
+      context: dev/dockerprovisioning/mysql/
+      dockerfile: MariaDB-11-4.Dockerfile.dev
+    volumes:
+      - mysql:/var/lib/mysql
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  #######################################
+  # Postgres server
+  #######################################
+#  postgres:
+#    build:
+#      context: dev/dockerprovisioning/postgres/
+#      dockerfile: PostgreSQL-14-9.Dockerfile.dev
+#    volumes:
+#      - postgres:/var/lib/postgresql
+#    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+#    networks:
+#      - app-network
+
+#  #######################################
+#  # OpenSearch
+#  #######################################
+#  opensearch:
+#    image: opensearchproject/opensearch:1.3.20
+#    volumes:
+#      - opensearch:/usr/share/opensearch/data
+#    environment:
+#      - cluster.name=opensearch-cluster
+#      - node.name=opensearch-neos
+#      - discovery.type=single-node
+#      - bootstrap.memory_lock=true # along with the memlock settings below, disables swapping (= Swapping is very bad for performance, for node stability, and should be avoided at all costs!)
+#      - "OPENSEARCH_JAVA_OPTS=-Xms1028m -Xmx1028m" # minimum and maximum Java heap size, recommend setting both to 50% of system RAM
+#      - "DISABLE_INSTALL_DEMO_CONFIG=true" # disables execution of install_demo_configuration.sh bundled with security plugin, which installs demo certificates and security configurations to OpenSearch
+#      - "DISABLE_SECURITY_PLUGIN=true" # disables security plugin entirely in OpenSearch by setting plugins.security.disabled: true in opensearch.yml
+#      - network.host=0.0.0.0 # required if not using the demo security configuration
+#    ulimits:
+#      memlock:
+#        soft: -1
+#        hard: -1
+#      nofile:
+#        soft: 65536 # maximum number of open files for the OpenSearch user, set to at least 65536 on modern systems
+#        hard: 65536
+#    networks:
+#      - app-network
+
+volumes:
+  mysql:
+#  postgres:
+#  opensearch:
+
+networks:
+  app-network:
+    driver: bridge

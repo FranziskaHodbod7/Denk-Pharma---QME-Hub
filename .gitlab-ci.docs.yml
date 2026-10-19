@@ -1,0 +1,57 @@
+
+pages:generate-structurizr-site:
+  stage: build
+  image: 
+    name: ghcr.io/avisi-cloud/structurizr-site-generatr:1.5.2
+    entrypoint: [""]
+  variables:
+    DOCUMENTATION_PATH: "Documentation"
+  before_script:
+    - cd $DOCUMENTATION_PATH
+  needs: []
+  dependencies: []
+  rules:
+    - exists:
+      - $DOCUMENTATION_PATH/workspace.dsl
+      changes:
+      - "**/*.md"
+      - "$DOCUMENTATION_PATH/**/*"
+  #   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+  script:
+    - /opt/structurizr-site-generatr/bin/structurizr-site-generatr generate-site --workspace-file workspace.dsl --assets-dir assets --output-dir "$CI_PROJECT_DIR/structurizr-static"
+  tags:
+    - devlab2
+  artifacts:
+    paths:
+      - structurizr-static
+    expire_in: 1 week
+
+
+pages:build:
+  stage: build
+  image: alpine:3
+  variables:
+    DOCUMENTATION_PATH: "Documentation"
+  needs:
+    - pages:generate-structurizr-site
+  dependencies:
+    - pages:generate-structurizr-site
+  rules:
+    - exists:
+      - $DOCUMENTATION_PATH/workspace.dsl
+      changes:
+      - "**/*.md"
+      - "$DOCUMENTATION_PATH/**/*"
+  #   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - mv "$CI_PROJECT_DIR/structurizr-static" "$CI_PROJECT_DIR/public"
+  pages:
+    expire_in: 8 week
+  tags:
+    - devlab2
+  artifacts:
+    paths:
+      - public
+    expire_in: 1h
+

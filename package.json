@@ -1,0 +1,36 @@
+{
+  "name": "formatd-neos-boilerplate",
+  "version": "2.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vite --mode development",
+    "dev:watch": "vite build --mode development --watch",
+    "dev:build": "vite build --mode devbuild",
+    "build": "vite build",
+    "build:code": "vite build",
+    "build:code:watch": "vite build --watch",
+    "preview": "vite preview",
+    "postinstall": "patch-package --patch-dir=source/Packages/Application/FormatD.DesignSystem/npm-patches"
+  },
+  "author": "Petra Weinmüller <pw@format-d.com>",
+  "license": "ISC",
+  "private": true,
+  "browserslist": [
+    "> 4%",
+    "last 2 versions"
+  ],
+  "dependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.1.2",
+    "altcha": "^3.2.2",
+    "autoprefixer": "^10.4.21",
+    "formatd-designsystem": "file:source/Packages/Application/FormatD.DesignSystem",
+    "formatd-flashmessages": "file:source/Packages/Application/FormatD.FlashMessages",
+    "patch-package": "^8.0.1",
+    "postcss": "^8.5.6",
+    "sass": "^1.92.1",
+    "svelte": "^5.0.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.0"
+  }
+}

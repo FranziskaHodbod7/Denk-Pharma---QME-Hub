@@ -1,0 +1,56 @@
+
+include:
+  - project: 'format-d/devops/format-d-ci-templates'
+    ref: devlab3
+    file: '/neos-ci.yml'
+  - local: .gitlab-ci.docs.yml
+
+#  Build
+#-------------------------------
+
+build:
+  extends: .base_build
+
+
+#  Review Deployment
+#-------------------------------
+
+deploy_review:
+  extends: .base_deploy_review
+
+stop_review:
+  extends: .base_stop_review
+
+#deploy_contententry:
+#  extends: .base_deploy_contententry
+#
+#stop_contententry:
+#  extends: .base_stop_contententry
+
+
+#  Tests
+#-------------------------------
+
+test_review_callable200:
+  extends: .test_review_callable200
+
+#... add additional tests here...
+#
+## s2s test with cypress. Create necessary testcases in /tests/e2e
+#test_review_e2e:
+#  extends: .test_review_e2e
+
+
+#  Live Deployments
+#-------------------------------
+
+deploy_live:
+  extends: .base_deploy_live
+  environment:
+    name: Live
+    url: https://denk-qme.com/
+
+#deploy_stage:
+#  extends: .base_deploy_stage
+#  environment:
+#    #url: https://www.format-d.com/

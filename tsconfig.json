@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "CommonJS",
+    "strict": false,
+    "esModuleInterop": true,
+    "paths": {
+      "@designSystemPublic/*": ["./source/Packages/Application/FormatD.DesignSystem/Resources/Public/*"],
+      "@designSystemPrivate/*": ["./source/Packages/Application/FormatD.DesignSystem/Resources/Private/*"],
+      "@projectPublic/*": ["./source/DistributionPackages/Sites/DenkPharma.Hub/Resources/Public/*"],
+      "@projectPrivate/*": [ "./source/DistributionPackages/Sites/DenkPharma.Hub/Resources/Private/*"],
+      "@packages/*": ["./source/Packages/*"],
+      "@distributionPackages/*": ["./source/DistributionPackages/*"]
+    }
+  },
+  "exclude": [
+    "node_modules",
+    "**/Public",
+    "**/Neos.*"
+  ]
+}

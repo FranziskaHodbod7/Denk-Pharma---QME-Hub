@@ -1,0 +1,111 @@
+#!/bin/bash -e
+
+############################################################################################################################################################
+#                                                                                                                                                          #
+#  __/\\\\\\\\\\\\\\\_______/\\\\\_________/\\\\\\\\\______/\\\\____________/\\\\_____/\\\\\\\\\_____/\\\\\\\\\\\\\\\____________/\\\\\\\\\\\\____         #
+#   _\/\\\///////////______/\\\///\\\_____/\\\///////\\\___\/\\\\\\________/\\\\\\___/\\\\\\\\\\\\\__\///////\\\/////____________\/\\\////////\\\__        #
+#    _\/\\\_______________/\\\/__\///\\\__\/\\\_____\/\\\___\/\\\//\\\____/\\\//\\\__/\\\/////////\\\_______\/\\\_________________\/\\\______\//\\\_       #
+#     _\/\\\\\\\\\\\______/\\\______\//\\\_\/\\\\\\\\\\\/____\/\\\\///\\\/\\\/_\/\\\_\/\\\_______\/\\\_______\/\\\_________________\/\\\_______\/\\\_      #
+#      _\/\\\///////______\/\\\_______\/\\\_\/\\\//////\\\____\/\\\__\///\\\/___\/\\\_\/\\\\\\\\\\\\\\\_______\/\\\_________________\/\\\_______\/\\\_     #
+#       _\/\\\_____________\//\\\______/\\\__\/\\\____\//\\\___\/\\\____\///_____\/\\\_\/\\\/////////\\\_______\/\\\_________________\/\\\_______\/\\\_    #
+#        _\/\\\______________\///\\\__/\\\____\/\\\_____\//\\\__\/\\\_____________\/\\\_\/\\\_______\/\\\_______\/\\\_________________\/\\\_______/\\\__   #
+#         _\/\\\________________\///\\\\\/_____\/\\\______\//\\\_\/\\\_____________\/\\\_\/\\\_______\/\\\_______\/\\\_________________\/\\\\\\\\\\\\/___  #
+#          _\///___________________\/////_______\///________\///__\///______________\///__\///________\///________\///__________________\////////////_____ #
+#                                                                                                                                                          #
+# Development-Environment Management Script                                                                                                                #
+# Copyright 2020 Format D GmbH                                                                                                                             #
+############################################################################################################################################################
+
+
+# Most Basic environment variables
+####################################################
+
+DC_UPDATECHECKS=true
+NOW=$(date +%s)
+SCRIPT_DIR="$( cd "$(dirname "$0")" ; pwd -P )"
+
+# Load conf file to have system variable available early
+# (will be loaded again in init process)
+. "$SCRIPT_DIR/fd.conf"
+
+
+# Minimal Functions for install
+####################################################
+
+show_time() {
+	local T=$1
+	local D=$((T/60/60/24))
+	local H=$((T/60/60%24))
+	local M=$((T/60%60))
+	local S=$((T%60))
+	(( $D > 0 )) && printf '%d days ' $D
+	(( $H > 0 )) && printf '%d hours ' $H
+	(( $M > 0 )) && printf '%d minutes ' $M
+	(( $D > 0 || $H > 0 || $M > 0 )) && printf 'and '
+	printf '%d seconds\n' $S
+}
+
+install() {
+	local pullOutput=$(set -e && git clone "git@gitlab.com:format-d/devops/format-d-dev-control.git" "$SCRIPT_DIR/dev/dev-control" \
+		&& cd "$SCRIPT_DIR/dev/dev-control" \
+		&& git fetch --all \
+		&& git reset --hard "origin/$DC_VERSION");
+}
+
+self_update() {
+	echo "Time passed since last update check:"
+	show_time $UPDATE_TIME_PASSED
+	echo "Checking for Updates..."
+	local fetchOutput=$(cd "$SCRIPT_DIR/dev/dev-control" && git fetch --all 2>/dev/null)
+	local diffOutput=$(cd "$SCRIPT_DIR/dev/dev-control" && git diff "origin/$DC_VERSION")
+
+	if [[ $diffOutput = "" ]]; then
+		echo "Already up to date."
+	else
+		echo "New version available. Updating..."
+		local pullOutput=$(cd "$SCRIPT_DIR/dev/dev-control" && git reset --hard "origin/$DC_VERSION")
+		if [[ -d "$SCRIPT_DIR/dev/dev-control-overlay" ]]; then
+			echo -e "${ORANGE}You have custom scripts in ./dev/dev-control-overlay Please check their compatibility after this update manually!${NC}"
+		fi
+	fi
+}
+
+
+# Installation and update
+####################################################
+
+if [[ ! -f "$SCRIPT_DIR/dev/dev-control/init.sh" ]]; then
+	echo "Dev Control not installed. Installing now..."
+	install
+	UPDATE_LAST_CHECK="$NOW"
+elif [[ -f "$SCRIPT_DIR/dev/dev-control/.git/FETCH_HEAD" ]]; then
+	if [[ "$(uname -s)" == "Darwin" ]]; then
+		UPDATE_LAST_CHECK=$(stat -f "%m" "$SCRIPT_DIR/dev/dev-control/.git/FETCH_HEAD")
+	else
+		UPDATE_LAST_CHECK=$(stat -c "%Y" "$SCRIPT_DIR/dev/dev-control/.git/FETCH_HEAD")
+  fi
+fi
+
+UPDATE_TIME_PASSED="$(($NOW-$UPDATE_LAST_CHECK))"
+
+. "$SCRIPT_DIR/dev/dev-control/devlab/colors.sh"
+
+# check for updates after a day
+if [[ "$UPDATE_TIME_PASSED" -gt 86400 && $DC_UPDATECHECKS = true ]]; then
+	self_update
+fi
+
+# make self-update callable manually
+if [[ "self-update" == "$1" ]]; then
+	self_update
+	exit 0
+fi
+
+# Init dev control:
+####################################################
+
+if [[ -f "$SCRIPT_DIR/dev/dev-control/init.sh" ]]; then
+	. "$SCRIPT_DIR/dev/dev-control/init.sh"
+else
+	echo "Dev Control not installed correctly! Contact your loving devops admin!"
+fi

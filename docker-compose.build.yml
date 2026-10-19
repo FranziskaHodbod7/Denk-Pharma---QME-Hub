@@ -1,0 +1,37 @@
+services:
+  #######################################
+  # PHP application Docker container
+  #######################################
+  app:
+    volumes:
+      - .:/app
+    env_file:
+      - dev/dockerprovisioning/default.env
+      - dev/dockerprovisioning/development.env
+    secrets:
+      - host_ssh_key
+
+  #######################################
+  # MySQL server
+  #######################################
+  mysql:
+    volumes:
+      - ./dev/project_development.sql.gz:/docker-entrypoint-initdb.d/project_development.sql.gz
+    env_file:
+      - dev/dockerprovisioning/default.env
+      - dev/dockerprovisioning/development.env
+
+  #######################################
+  # PostgreSQL server
+  #######################################
+#  postgres:
+#    volumes:
+#      - ./dev/project_development.sql.gz:/docker-entrypoint-initdb.d/project_development.sql.gz
+#    env_file:
+#      - dev/dockerprovisioning/default.env
+#      - dev/dockerprovisioning/development.env
+
+
+secrets:
+  host_ssh_key:
+    file: ./build_key

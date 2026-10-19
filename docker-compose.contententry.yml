@@ -1,0 +1,79 @@
+services:
+  #######################################
+  # PHP application Docker container
+  #######################################
+  app:
+    image: ${CI_REGISTRY_IMAGE}/app:${CI_COMMIT_REF_SLUG}
+    build:
+      # change context to have complete source-code available for copying to image
+      context: .
+      dockerfile: dev/dockerprovisioning/app/Apache-PHP-85.Dockerfile.review
+    volumes:
+      - /mnt/mediastorage/storage/${CI_PROJECT_PATH_SLUG}/source/Data/Persistent/Resources:/app/Data/Persistent/Resources
+    env_file:
+      - dev/dev-control/devlab/smtp-credentials.env
+      - dev/dockerprovisioning/default.env
+      - dev/dockerprovisioning/review.env
+      - dev/dockerprovisioning/contententry.env
+      - dev/dev-control/devlab/db-credentials.env
+    networks:
+      - web
+      - devlabdb
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${CI_PROJECT_PATH_SLUG}_${CI_COMMIT_REF_SLUG}.rule=${DEVLAB_PROJECT_TRAEFIK_RULE}"
+      - "traefik.http.routers.${CI_PROJECT_PATH_SLUG}_${CI_COMMIT_REF_SLUG}.middlewares=${CI_PROJECT_PATH_SLUG}_${CI_COMMIT_REF_SLUG}-auth"
+      - "traefik.http.middlewares.${CI_PROJECT_PATH_SLUG}_${CI_COMMIT_REF_SLUG}-pass-auth.basicauth.users=---FD_DEVLAB_PASSWD_REPLACE---"
+      - "traefik.http.middlewares.${CI_PROJECT_PATH_SLUG}_${CI_COMMIT_REF_SLUG}-pass-auth.basicauth.usersfile=/secrets/traefik-reviewUsers"
+      - "traefik.http.middlewares.${CI_PROJECT_PATH_SLUG}_${CI_COMMIT_REF_SLUG}-pass-auth.basicauth.realm=Devlab"
+      - "traefik.http.middlewares.${CI_PROJECT_PATH_SLUG}_${CI_COMMIT_REF_SLUG}-auth.chain.middlewares=fd-review-ip-auth@file,${CI_PROJECT_PATH_SLUG}_${CI_COMMIT_REF_SLUG}-pass-auth"
+      - "traefik.http.services.app-${CI_PROJECT_PATH_SLUG}_${CI_COMMIT_REF_SLUG}.loadbalancer.server.scheme=https"
+      - "traefik.http.services.app-${CI_PROJECT_PATH_SLUG}_${CI_COMMIT_REF_SLUG}.loadbalancer.server.port=443"
+
+  #######################################
+  # MySQL server
+  #######################################
+  mysql:
+    image: ${CI_REGISTRY_IMAGE}/mysql:${CI_COMMIT_REF_SLUG}
+    entrypoint: ["echo", "Service mysql disabled"]
+    labels:
+      - traefik.enable=false
+
+  #######################################
+  # PostgreSQL server
+  #######################################
+#  postgres:
+#    image: ${CI_REGISTRY_IMAGE}/postgres:${CI_COMMIT_REF_SLUG}
+#    entrypoint: ["echo", "Service postgres disabled"]
+#    labels:
+#      - traefik.enable=false
+
+  #######################################
+  # OpenSearch
+  #######################################
+#  opensearch:
+#    restart: unless-stopped
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 2g
+#    labels:
+#      - traefik.enable=false
+
+  #######################################
+  # Redis
+  #######################################
+  redis:
+    image: redis:6.2
+    restart: unless-stopped
+    labels:
+      - traefik.enable=false
+    networks:
+      - app-network
+
+networks:
+  web:
+    external: true
+  devlabdb:
+    external: true

@@ -1,0 +1,56 @@
+services:
+  #######################################
+  # PHP application Docker container
+  #######################################
+  app:
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - denk-pharma-qme-hub-dockersync:/app:nocopy # nocopy is important
+    env_file:
+      - dev/dev-control/devlab/smtp-credentials.env
+      - dev/dockerprovisioning/default.env
+      - dev/dockerprovisioning/development.env
+    secrets:
+      - host_ssh_key
+
+  #######################################
+  # MySQL server
+  #######################################
+  mysql:
+    ports:
+      - 3306:3306
+    volumes:
+      - ./dev/project_development.sql.gz:/docker-entrypoint-initdb.d/project_development.sql.gz
+    env_file:
+      - dev/dockerprovisioning/default.env
+      - dev/dockerprovisioning/development.env
+
+  #######################################
+  # PostgreSQL server
+  #######################################
+#  postgres:
+#    ports:
+#      - 5432:5432
+#    volumes:
+#      - ./dev/project_development.sql.gz:/docker-entrypoint-initdb.d/project_development.sql.gz
+#    env_file:
+#      - dev/dockerprovisioning/default.env
+#      - dev/dockerprovisioning/development.env
+
+  #######################################
+  # Opensearch
+  #######################################
+# Uncomment if you need access from host system
+#  opensearch:
+#    ports:
+#      - 9200:9200
+
+volumes:
+  denk-pharma-qme-hub-dockersync:
+    external: true
+
+secrets:
+  host_ssh_key:
+    file: ~/.ssh/id_rsa

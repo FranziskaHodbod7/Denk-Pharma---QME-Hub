@@ -1,0 +1,22 @@
+# These Files are ignored when files are copied to the docker deamon before build
+.idea
+.gitlab
+*/.git/*
+node_modules
+/resources
+
+# General swap/backup files
+*.so
+*.log
+*.out
+*~
+*.swp
+*.DS_Store
+*.sass-cache*
+
+
+# Neos Flow
+Web/_Resources/Persistent/
+Web/_Resources/Static/
+Data/Logs/
+Data/Temporary/
